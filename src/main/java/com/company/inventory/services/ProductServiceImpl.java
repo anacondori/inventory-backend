@@ -76,8 +76,6 @@ public class ProductServiceImpl implements IProductService {
 
 
 
-	
-	
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntity<ProductResponseRest> searchById(Long id) {
@@ -114,8 +112,6 @@ public class ProductServiceImpl implements IProductService {
 	}
 
 
-
-	
 	
 	@Override
 	@Transactional(readOnly = true)
@@ -156,6 +152,29 @@ public class ProductServiceImpl implements IProductService {
 		
 		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);	
 	}
+
+
+	@Override
+	@Transactional
+	public ResponseEntity<ProductResponseRest> deleteById(Long id) {
+		
+		ProductResponseRest response = new ProductResponseRest();
+		
+		try {
+			//delete product by id
+			productDao.deleteById(id);
+			response.setMetadata("Respuesta OK", "00", "Producto por ID eliminado");
+						
+			
+		} catch(Exception e) {
+			response.setMetadata("Respuesta KO", "-1", "Error al eliminar producto");
+			e.getStackTrace();
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);	
+	}
+
 
 
 
