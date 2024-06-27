@@ -96,4 +96,17 @@ public class ProductoRestController {
 		ResponseEntity<ProductResponseRest> response =  productService.deleteById(id);
 		return response;
 	}	
+
+	
+	/**
+	 * get product all
+	 * @param id
+	 * @return
+	 */
+	@GetMapping("/products")
+	public ResponseEntity<ProductResponseRest> search(){
+		ResponseEntity<ProductResponseRest> response =  productService.search();
+		return response;
+	}	
+
 }
