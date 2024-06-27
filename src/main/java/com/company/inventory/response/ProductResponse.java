@@ -8,6 +8,5 @@ import lombok.Data;
 
 @Data
 public class ProductResponse {
-
-	List<Product> products;
+	private List<Product> product;
 }

@@ -28,10 +28,10 @@ public class Product implements Serializable{
 	private Long id;
 	private String name;
 	private int price;
-	private int account;
+	private int account; //cantidad del producto
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JsonIgnoreProperties({"hibernateLazyInitializar", "handler"})
+	@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 	private Category category;
 	
 	@Lob

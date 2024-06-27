@@ -7,12 +7,15 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.company.inventory.dao.ICategoryDao;
 import com.company.inventory.dao.IProductDao;
 import com.company.inventory.model.Category;
 import com.company.inventory.model.Product;
 import com.company.inventory.response.ProductResponseRest;
+import com.company.inventory.util.Util;
+
 
 
 //detalle de los metodps definidos en la interface
@@ -32,6 +35,7 @@ public class ProductServiceImpl implements IProductService {
 
 
 	@Override
+	@Transactional
 	public ResponseEntity<ProductResponseRest> save(Product product, Long categoryId) {
 		
 		ProductResponseRest response = new ProductResponseRest();
@@ -52,7 +56,7 @@ public class ProductServiceImpl implements IProductService {
 			Product productSaved = productDao.save(product);
 			if (productSaved != null) { //si se guardo el producto
 				list.add(productSaved);
-				response.getProduct().setProducts(list);
+				response.getProduct().setProduct(list);
 				
 				response.setMetadata("Respuesta OK", "00", "Producto guardado");
 			} else {
@@ -69,5 +73,45 @@ public class ProductServiceImpl implements IProductService {
 		
 		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);	
 	}
+
+
+
+	
+	
+	@Override
+	@Transactional(readOnly = true)
+	public ResponseEntity<ProductResponseRest> searchById(Long id) {
+		
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> list = new ArrayList<>();
+		
+		try {
+			//search product by id
+			Optional<Product> product = productDao.findById(id);
+			if (product.isPresent()) {
+				//descomprimir la imagen q esta en base64
+				byte[] imageDescompressed = Util.decompressZLib(product.get().getPicture()); 
+				
+				product.get().setPicture(imageDescompressed);
+				list.add(product.get());
+				response.getProduct().setProduct(list);
+				
+				response.setMetadata("Respuesta OK", "00", "Producto por ID encontrada");
+				
+			} else {
+				response.setMetadata("Respuesta KO", "-1", "Producto no encontrado");
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+						
+			
+		} catch(Exception e) {
+			response.setMetadata("Respuesta KO", "-1", "Error al buscar producto");
+			e.getStackTrace();
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);	
+	}
+
 
 }
