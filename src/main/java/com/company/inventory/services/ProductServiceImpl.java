@@ -75,7 +75,6 @@ public class ProductServiceImpl implements IProductService {
 	}
 
 
-
 	@Override
 	@Transactional(readOnly = true)
 	public ResponseEntity<ProductResponseRest> searchById(Long id) {
@@ -223,6 +222,60 @@ public class ProductServiceImpl implements IProductService {
 
 
 	
+	@Override
+	@Transactional
+	public ResponseEntity<ProductResponseRest> update(Product product, Long categoryId, Long id) {
+		
+		ProductResponseRest response = new ProductResponseRest();
+		List<Product> list = new ArrayList<>();
+		
+		try {
+			//search category to set in the product object
+			Optional<Category> category = categoryDao.findById(categoryId); //busqueda de categoria
+			if (category.isPresent()) {
+				product.setCategory(category.get());
+				
+			} else {
+				response.setMetadata("Respuesta KO", "-1", "Categoria no encontrada asociada al producto");
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			//search product to update
+			Optional<Product> productSearch = productDao.findById(id);  //busqueda de producto
+			if (productSearch.isPresent()) { //si ENCONTRE el producto
+				//se ACTUALIZA el PRODUCTO
+				productSearch.get().setAccount(product.getAccount());
+				productSearch.get().setCategory(product.getCategory());
+				productSearch.get().setName(product.getName());
+				productSearch.get().setPrice(product.getPrice());
+				productSearch.get().setPicture(product.getPicture()); //como la imagen ya viene en BASE64 No hay que hacer tratamiento alguno
+				
+				//SAVE PRODUCT IN DB
+				Product productToUpdate = productDao.save(productSearch.get());
+				if (productToUpdate != null) {
+					list.add(productToUpdate);
+					response.getProduct().setProduct(list);
+					response.setMetadata("Respuesta OK", "00", "Producto actualizado");
+				} else {
+					response.setMetadata("Respuesta KO", "-1", "Producto no actualizado");
+					return new ResponseEntity<ProductResponseRest>(response, HttpStatus.BAD_REQUEST);
+				}
+				
+			} else {
+				response.setMetadata("Respuesta KO", "-1", "Producto no encontrado para la actualizacion");
+				return new ResponseEntity<ProductResponseRest>(response, HttpStatus.NOT_FOUND);
+			}
+			
+			
+		} catch(Exception e) {
+			response.setMetadata("Respuesta KO", "-1", "Error al actualizar producto");
+			e.getStackTrace();
+			return new ResponseEntity<ProductResponseRest>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		return new ResponseEntity<ProductResponseRest>(response, HttpStatus.OK);	
+	}
+
 	
 
 
